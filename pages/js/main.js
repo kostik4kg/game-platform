@@ -429,7 +429,7 @@ function makeWorld(a, box) {
 }
 function btnControllImg() {
   btnLeft.press = () => {
-    tank.rotationSpeed = -0.1;
+    tank.rotationSpeed = -0.03;
     moveEmitter.play();
     if (!soundRotate.playing) { soundRotate.play() };
   }
@@ -439,7 +439,7 @@ function btnControllImg() {
     soundRotate.pause();
   }
   btnRight.press = () => {
-    tank.rotationSpeed = 0.1;
+    tank.rotationSpeed = 0.03;
     moveEmitter.play();
     if (!soundRotate.playing) { soundRotate.play() };
   }
@@ -483,7 +483,7 @@ function btnControllImg() {
 function controllBtn() {
   leftArrow.press = () => {
     tank.direction = 'left';
-    tank.rotationSpeed = -0.1;
+    tank.rotationSpeed = -0.03;
     moveEmitter.play();
     if (!soundRotate.playing) { soundRotate.play() };
   };
@@ -511,7 +511,7 @@ function controllBtn() {
   };
   rightArrow.press = () => {
     tank.direction = 'right';
-    tank.rotationSpeed = 0.1;
+    tank.rotationSpeed = 0.03;
     moveEmitter.play();
     if (!soundRotate.playing) { soundRotate.play() };
   };
