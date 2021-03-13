@@ -11,9 +11,10 @@ let tanksTile = ['./img/kenney_topdowntanksredux/Spritesheet/allSprites_default.
   './img/imgControll/flatDark23.png',
   './img/imgControll/flatDark24.png',
   './img/imgControll/flatDark25.png',
-  './img/imgControll/myBtn.png'];
+  './img/imgControll/myBtn.png',
+'./img/tilemap_packed.png']
 
-let g = hexi(window.width, window.height, setup, tanksTile, load);
+let g = hexi(812, window.height, setup, tanksTile, load);
 g.scaleToWindow();
 g.start();
 g.backgroundColor = "grey";
@@ -23,8 +24,8 @@ function load() {
 }
 let mode = undefined;
 const level = {
-  widthInTiles: 20,
-  heightInTiles: 20,
+  widthInTiles: 18,
+  heightInTiles: 16,
   widthTile: 64,
   heightTile: 64,
   tileset: {
@@ -32,10 +33,10 @@ const level = {
     field: [128,0],
     roadGorizont: [[128, 384], [128, 128], [128, 192]],
     roadVertical: [[128, 64], [128, 256], [128, 320]],
-    raodTurn: [[0, 0],[0, 192], [0, 256]]
+    raodTurn: [[0, 0],[0, 192], [0, 256]],
   }
 }
-
+let tileBuild = undefined;
 let tank = null,
     turret = null,
     bullets = null,
@@ -78,8 +79,8 @@ let btnLeft = undefined,
     btnUp = undefined,
     btnPuh;
 
-
 function setup(){
+
   soundBom = g.sound('./sounds/popal.mp3');
   soundPuh = g.sound('./sounds/vistrel.mp3');
   soundVjjj = g.sound('./sounds/tracks_rattle_slow_01.mp3');
@@ -120,8 +121,9 @@ function setup(){
   
   player = g.sprite(botPlayer);
   player.setPosition(150, 150);
+  // player.setScale(2, 2);
   // walkTank(player);
-
+ 
   tankFrame.rotate += -1.6;
   tank = g.sprite(tankFrame);
   tank.setPivot(0.5, 0.5);
@@ -135,7 +137,8 @@ function setup(){
   tank.rotationSpeed = 0;
   tank.moveForward = false;
   tank.direction = 'up';
-
+  
+  
   d = g.sprite(tankGusein);
   d.setPivot(0.5, 0.5);
   d.fps = 12;
@@ -152,8 +155,6 @@ function setup(){
   d.x = 0;
   d.y = 0; d.setScale(1.2,1.2)
 
-  
-
   bullets = [];
 
   moveEmitter = g.particleEmitter(100,
@@ -166,38 +167,36 @@ function setup(){
         0, 6.28,                                 //Min/max angle
         20, 24, )
     });
-
-  bricks = g.grid(3, 3, 50, 50,true, 0, 0,
-    function() {
-      var brick = g.rectangle(15,15,'blue');
-      return brick;
-    });
   
 
+
+  bricks = g.grid(5, 4, 200, 250,false, 0, 0,
+    function() {
+      
+      var brick = createBuilding();
+      brick.health = 100;
+      return brick;
+    });
+  bricks.children.forEach((item, i) => {
+    let sizeB = g.randomInt(0, item.width);
+    item.x += sizeB;
+    item.y += sizeB;
+  });
   let settingBack = g.rectangle(g.canvas.width, g.canvas.height, 'orange');
   backMenuBtn = g.button(['./img/blob.png', './img/blob.png', './img/blob.png']);
   backMenuBtn.setPosition(0, 50);
   world1 = makeWorld(level);
   world1.x = 0;
   world1.y = 0;
-  
-  settingGameScene = g.group();
-
-  // tank.setPosition(0,0);
-
-  gameSceneOneGroup = g.group(world1, bricks, player);
-  camera = g.worldCamera(gameSceneOneGroup, world1.worldWidth, world1.worldHeight);
-  camera.centerOver(tank);
-  // tank.collisionArea = { x: 0, y: 0, width: 10, height: 10 };
 
   // полоска настройка в самой игре
-  let k = g.rectangle(g.canvas.width, 100, 'blue');
-  k.y = g.canvas.height - k.height;
-  settingGameScene.addChild(k, settingInPlay, btnLeft, btnRight, btnUp, btnPuh);
+  gameSceneOneGroup = g.group(world1, bricks, player);
 
-  gameSceneOne = g.group(gameSceneOneGroup, tank, settingGameScene);
-  gameSceneOneGroup.setPosition(-500,0);
-  gameSceneOne.x = -1000;
+  
+  gameSceneOne = g.group(gameSceneOneGroup, tank);
+
+  camera = g.worldCamera(gameSceneOne, gameSceneOne.width, gameSceneOne.height);
+  camera.centerOver(tank);
 
   titleScene = g.group(titleText, playButton, testBtn);
   titleScene.x = 0;
@@ -206,27 +205,40 @@ function setup(){
   SettingScene = g.group(settingBack, backMenuBtn);
   SettingScene.x = 0;
   SettingScene.y = -settingBack.height;
+  
+  gameSceneOne.x = 1000;
+  gameSceneOne.y = 0;
+
+  settingGameScene = g.group();
+  settingGameScene.addChild(settingInPlay, btnLeft, btnRight, btnUp, btnPuh);
+  settingGameScene.alpha = 0.5;
+
+  settingGameScene.visible = false;
 
   settingInPlay.press = () => {
     mode = 'setting';
+    settingGameScene.visible = false;
     controllBtnStop();
     g.slide(titleScene, 0, 0, 30, "decelerationCubed");
-    g.slide(gameSceneOne, g.canvas.width + 500, 0, 30, "decelerationCubed");
+    g.slide(gameSceneOne, gameSceneOne.width, 0, 30, "decelerationCubed");
     g.pause();
   }
   backMenuBtn.press = () => {
+    settingGameScene.visible = false;
     mode = 'start';
     g.slide(titleScene, 0, 0, 30, "decelerationCubed");
     g.slide(SettingScene, 0, -settingBack.height, 30, "decelerationCubed");
   }
   testBtn.press = () => {
+    settingGameScene.visible = false;
     mode = 'setting';
     g.slide(titleScene, g.canvas.width, 0, 30, "decelerationCubed");
     g.slide(SettingScene, 0, 0, 30, "decelerationCubed");
   };
-
+  
   playButton.press = function () {
     mode = 'play';
+    settingGameScene.visible = true;
     soundPuh.volume = 0.5;
     soundBom.volume = 0.5;
     soundVjjj.volume = 0.5;
@@ -241,10 +253,11 @@ function setup(){
       btnControllImg();
     }
   }
+  g.stage.putCenter(tank);
 }
 
 function play() {
-  camera.follow(tank);
+  var conectRect = g.contain(tank, world1);
 
   tank.rotation  += (tank.rotationSpeed);
   if (tank.moveForward) {
@@ -257,34 +270,35 @@ function play() {
   }
   tank.x += tank.vx;
   tank.y += tank.vy;
-
-  g.contain(tank, { x: 0, y: 0, width: g.canvas.width, height: g.canvas.height}, false);
   
-  // g.move(tank);
+  g.move(tank);
+
+  camera.follow(tank);
 
   bullets = bullets.filter(bullet => {
-    g.move(bullet);
     var collision = g.outsideBounds(bullet, g.stage);
     var collision2 = g.hit(bullet, player, true, true);
-    bricks.children.forEach(brick => {
-      let coll = g.hit(bullet, brick,  true, false);
-      if(coll) {
+
+    bricks.children.filter(brick => {
+      
+      if (g.hitTestRectangle(bullet, brick)) {
         g.remove(brick);
-        // bullet.visible = 0;  
         bullet.vx = 0;
         bullet.vy = 0;
         g.remove(bullet);
+
         return false;
       }
-    })
-    
+      return true;
+    });
+
     if (collision) {
       g.remove(bullet);
       return false;
     }
+
     if (collision2) {
       soundBom.play();
-      g.shake(tank, 1, false);
       bullet.visible = false;
       let bullPart = g.createParticles(bullet.x, bullet.y,
         function () {
@@ -296,9 +310,11 @@ function play() {
     }
     return true;
   });
-  
+
+  g.move(bullets);
+
   g.hit(tank, bricks.children, true, false, true);
-  // g.hit(tank, player, true, false, true);
+
 };
 
 function walkTank(a) {
@@ -365,6 +381,18 @@ function makeWorld(a, box) {
           cell.tirein = 'road6';
           world.map.push(cell);
           break;
+        case 7:
+          cell.tirein = 'road7';
+          world.map.push(cell);
+          break;
+        case 8:
+          cell.tirein = 'road8';
+          world.map.push(cell);
+          break;
+        case 9:
+          cell.tirein = 'road9';
+          world.map.push(cell);
+          break;
         default:
           cell.tirein = 'pole';
           world.map.push(cell);
@@ -417,6 +445,30 @@ function makeWorld(a, box) {
           world.addChild(sprite);
           break;
         case 'road6':
+          frame = g.frame(a.tileset.source, a.tileset.roadVertical[2][0], a.tileset.roadVertical[2][1], width, height);
+          sprite = g.sprite(frame);
+          sprite.setPosition(x, y);
+          world.addChild(sprite);
+          break;
+        case 'road7':
+          frame = g.frame(a.tileset.source, a.tileset.raodTurn[2][0], a.tileset.raodTurn[2][1], width, height);
+          sprite = g.sprite(frame);
+          sprite.setPosition(x, y);
+          world.addChild(sprite);
+          break;
+        case 'road8':
+          frame = g.frame(a.tileset.source, a.tileset.raodTurn[0][0], a.tileset.raodTurn[0][1], width, height);
+          sprite = g.sprite(frame);
+          sprite.setPosition(x, y);
+          world.addChild(sprite);
+          break;
+        case 'road9':
+          frame = g.frame(a.tileset.source, a.tileset.raodTurn[1][0], a.tileset.raodTurn[1][1], width, height);
+          sprite = g.sprite(frame);
+          sprite.setPosition(x, y);
+          world.addChild(sprite);
+          break;
+        case 'road10':
           frame = g.frame(a.tileset.source, a.tileset.roadVertical[2][0], a.tileset.roadVertical[2][1], width, height);
           sprite = g.sprite(frame);
           sprite.setPosition(x, y);
@@ -530,19 +582,31 @@ function controllBtnStop(){
 }
 function shooting() {
   spaceArrow.press = function () {
-    soundPuh.play();
-    g.shoot(tank,// Стрелок
-      (tank.rotation + 1.6), //Угол, под которым стрелять
-      0, //Точка x на стрелке, откуда должна начаться пуля
-      35, //Точка Y на стрелке, откуда должна начаться пуля.
-      g.stage, //Контейнер, в который вы хотите добавить пулю
-      7, //The bullet's speed (pixels per frame)
-      bullets, //Массив, используемый для хранения пуль
-      function () {
-        let bulletFrame = g.frames(level.tileset.source, [[485, 130]], 6, 16);
-        let bulletSprite = g.sprite(bulletFrame);
-        bulletSprite.rotation = tank.rotation + 3.2;
-        return bulletSprite;
-      });
-  };
+    
+      soundPuh.play();
+      g.shoot(tank,// Стрелок
+        (tank.rotation + 1.6), //Угол, под которым стрелять
+        0, //Точка x на стрелке, откуда должна начаться пуля
+        35, //Точка Y на стрелке, откуда должна начаться пуля.
+        g.stage, //Контейнер, в который вы хотите добавить пулю
+        7, //The bullet's speed (pixels per frame)
+        bullets, //Массив, используемый для хранения пуль
+        function () {
+          let bulletFrame = g.frames(level.tileset.source, [[485, 130]], 6, 16);
+          let bulletSprite = g.sprite(bulletFrame);
+          bulletSprite.rotation = tank.rotation + 3.2;
+          return bulletSprite;
+        });
+    }
+}
+function createBuilding(){
+  tileBuild = './img/tilemap_packed.png';
+  let arrBuild = g.group();
+  let spriteFrame = g.frame(tileBuild, 128, 48, 48, 48);
+  let spriteBlock = g.sprite(spriteFrame);
+  let buildF = g.frame(tileBuild, 272, 0, 48, 64);
+  let buildS = g.sprite(buildF);
+  buildS.y += spriteBlock.height;
+  arrBuild.addChild(spriteBlock, buildS);
+  return arrBuild;
 }
