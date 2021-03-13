@@ -1,0 +1,47 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+.conteiner {
+  width: 100vw;
+  height: 100vh;
+  background-color: #3dce9d;
+}
+
+h1 {
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.link-card {
+  width: 150px;
+  height: 250px;
+  background-color: #c51a14;
+  border-radius: 9px;
+  text-align: center;
+  color: white;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  margin: 0 auto;
+}
+
+.link-card a {
+  text-decoration: none;
+  color: white;
+  font-size: 2em;
+  display: block;
+  height: 100%;
+}
+/*# sourceMappingURL=style.css.map */
