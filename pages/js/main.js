@@ -174,7 +174,7 @@ function setup(){
   finish.setPivot(0.5, 0.5);
   g.strobe(finish, 1.1, 1, 1, 25);
   finish.x = world1.width / 2;
-  finish.y = world1.height /2 - 60;
+  finish.y = world1.height - 60;
 
   // полоска настройка в самой игре
   gameSceneOneGroup = g.group(world1, bricks, finish);
