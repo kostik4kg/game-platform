@@ -12,7 +12,9 @@ let tanksTile = ['./img/kenney_topdowntanksredux/Spritesheet/allSprites_default.
   './img/imgControll/flatDark24.png',
   './img/imgControll/flatDark25.png',
   './img/imgControll/myBtn.png',
-'./img/tilemap_packed.png']
+'./img/tilemap_packed.png',
+'./img/imgControll/back.png',
+'./img/imgControll/start.png']
 
 let g = hexi(812, window.height, setup, tanksTile, load);
 g.scaleToWindow();
@@ -53,7 +55,6 @@ let soundPuh,
     soundRotate;
 
 let bricks;
-let player;
 let world1;
 
 let titleText = undefined,
@@ -78,23 +79,22 @@ let btnLeft = undefined,
     btnRight = undefined,
     btnUp = undefined,
     btnPuh;
+let messeg = null;
+let messegBrick = null;
+let finishMessage = undefined;
+
+let finish = undefined;
 
 function setup(){
-
   soundBom = g.sound('./sounds/popal.mp3');
   soundPuh = g.sound('./sounds/vistrel.mp3');
   soundVjjj = g.sound('./sounds/tracks_rattle_slow_01.mp3');
   soundRotate = g.sound('./sounds/tankrotate.mp3');
 
-  titleText = g.text("empty game", "20px puzzler", "white", 0, 0);
+  titleText = g.text("super tank scout", "20px puzzler", "white", 0, 0);
   titleText.setPosition(g.canvas.width / 2 - titleText.width / 2, 0);
-  let btnFr = g.frames('./img/buttonFrames.png', [[0, 0], [0, 96], [0, 192]], 192, 96);
-  playButton = g.button(btnFr);
-
-  // кнопка настроек на главной странице
-  testBtn = g.button(['./img/imgControll/myBtn.png', './img/imgControll/myBtn.png', './img/imgControll/myBtn.png']);
-  g.stage.putCenter(testBtn);
-  testBtn.y = g.canvas.height / 2 + testBtn.height;
+  
+  playButton = g.button(['./img/imgControll/start.png', './img/imgControll/start.png','./img/imgControll/start.png']);
 
   // btn controll
   btnLeft = g.button(['./img/imgControll/flatDark23.png', './img/imgControll/flatDark23.png', './img/imgControll/flatDark23.png']);
@@ -106,23 +106,17 @@ function setup(){
   btnUp.setPosition(btnLeft.height + 15, g.canvas.height - btnUp.height);
   btnPuh.setPosition(btnLeft.height + 200, g.canvas.height - btnUp.height );
   
-  let settingInPlay = g.button(['./img/blob.png', './img/blob.png', './img/blob.png']);
+  let settingInPlay = g.button(['./img/imgControll/back.png', './img/imgControll/back.png', './img/imgControll/back.png']);
   settingInPlay.setPosition(50, 0);
 
-  // g.slide(titleText, 250, 300, 30, "decelerationCubed");
   g.stage.putCenter(playButton);
   
   tankGusein = g.frames(level.tileset.source, [[476, 319], [476, 325], [476, 319] ], 37, 40);
   fireBullet = g.frames(level.tileset.source, [[262, 512]], 50, 50);
   let tankFrame = g.frames(level.tileset.source, [[476 ,0]] , 38, 40);
   let turretFrame = g.frames(level.tileset.source, [[514, 0]], 16, 30);
-  let botPlayer = g.frame(level.tileset.source, 432, 48, 42, 48);
   particleBullet = g.frames(level.tileset.source, [[0, 128]], 64, 63);
   
-  player = g.sprite(botPlayer);
-  player.setPosition(150, 150);
-  // player.setScale(2, 2);
-  // walkTank(player);
  
   tankFrame.rotate += -1.6;
   tank = g.sprite(tankFrame);
@@ -168,43 +162,32 @@ function setup(){
         20, 24, )
     });
   
+  bricks = g.group();
+  // createBricks();
 
-
-  bricks = g.grid(5, 4, 200, 250,false, 0, 0,
-    function() {
-      
-      var brick = createBuilding();
-      brick.health = 100;
-      return brick;
-    });
-  bricks.children.forEach((item, i) => {
-    let sizeB = g.randomInt(0, item.width);
-    item.x += sizeB;
-    item.y += sizeB;
-  });
-  let settingBack = g.rectangle(g.canvas.width, g.canvas.height, 'orange');
-  backMenuBtn = g.button(['./img/blob.png', './img/blob.png', './img/blob.png']);
-  backMenuBtn.setPosition(0, 50);
   world1 = makeWorld(level);
   world1.x = 0;
   world1.y = 0;
+  
+  let finifFrame = g.frame(level.tileset.source, 52,512,54,52);
+  finish = g.sprite(finifFrame);
+  finish.setPivot(0.5, 0.5);
+  g.strobe(finish, 1.1, 1, 1, 25);
+  finish.x = world1.width / 2;
+  finish.y = world1.height /2 - 60;
 
   // полоска настройка в самой игре
-  gameSceneOneGroup = g.group(world1, bricks, player);
-
+  gameSceneOneGroup = g.group(world1, bricks, finish);
   
   gameSceneOne = g.group(gameSceneOneGroup, tank);
 
   camera = g.worldCamera(gameSceneOne, gameSceneOne.width, gameSceneOne.height);
   camera.centerOver(tank);
 
-  titleScene = g.group(titleText, playButton, testBtn);
+  titleScene = g.group(titleText, playButton);
   titleScene.x = 0;
   titleScene.backgroundColor = 'green';
 
-  SettingScene = g.group(settingBack, backMenuBtn);
-  SettingScene.x = 0;
-  SettingScene.y = -settingBack.height;
   
   gameSceneOne.x = 1000;
   gameSceneOne.y = 0;
@@ -218,23 +201,13 @@ function setup(){
   settingInPlay.press = () => {
     mode = 'setting';
     settingGameScene.visible = false;
+    console.log('exit');
     controllBtnStop();
+    reset();
     g.slide(titleScene, 0, 0, 30, "decelerationCubed");
     g.slide(gameSceneOne, gameSceneOne.width, 0, 30, "decelerationCubed");
     g.pause();
   }
-  backMenuBtn.press = () => {
-    settingGameScene.visible = false;
-    mode = 'start';
-    g.slide(titleScene, 0, 0, 30, "decelerationCubed");
-    g.slide(SettingScene, 0, -settingBack.height, 30, "decelerationCubed");
-  }
-  testBtn.press = () => {
-    settingGameScene.visible = false;
-    mode = 'setting';
-    g.slide(titleScene, g.canvas.width, 0, 30, "decelerationCubed");
-    g.slide(SettingScene, 0, 0, 30, "decelerationCubed");
-  };
   
   playButton.press = function () {
     mode = 'play';
@@ -243,23 +216,35 @@ function setup(){
     soundBom.volume = 0.5;
     soundVjjj.volume = 0.5;
     soundRotate.volume = 0.5;
+
+
     g.slide(titleScene, g.canvas.width, 0, 30, "decelerationCubed");
     g.slide(gameSceneOne, 0, 0, 30, "decelerationCubed");
     g.state = play;
     g.resume();
     if (mode === 'play') { 
+      console.log(bricks);
       controllBtn();
       shooting();
       btnControllImg();
+
+      createBricks();
+      gameSceneOneGroup.addChild(bricks);
     }
+    // if (bricks === undefined) { createBricks();}
   }
   g.stage.putCenter(tank);
+
+  finishMessage = g.text('', '42px sant-serif', 'brown');
 }
 
 function play() {
+  finish.rotation += 0.1;
+
   var conectRect = g.contain(tank, world1);
 
   tank.rotation  += (tank.rotationSpeed);
+
   if (tank.moveForward) {
     tank.vx = tank.accelerationX * Math.cos(tank.rotation + 1.6);
     tank.vy = tank.accelerationY * Math.sin(tank.rotation + 1.6);
@@ -276,37 +261,27 @@ function play() {
   camera.follow(tank);
 
   bullets = bullets.filter(bullet => {
-    var collision = g.outsideBounds(bullet, g.stage);
-    var collision2 = g.hit(bullet, player, true, true);
-
+    let bulletRem = true;
     bricks.children.filter(brick => {
       
-      if (g.hitTestRectangle(bullet, brick)) {
+      if (g.hitTestRectangle(bullet, brick, true, true)) {
         g.remove(brick);
+        g.remove(bullet);
         bullet.vx = 0;
         bullet.vy = 0;
-        g.remove(bullet);
-
+        //g.remove(bullet);
+        bulletRem = false;
         return false;
       }
       return true;
     });
-
+    return bulletRem;
+  });
+  bullets = bullets.filter(bullet => {
+    var collision = g.outsideBounds(bullet, g.stage);
     if (collision) {
       g.remove(bullet);
       return false;
-    }
-
-    if (collision2) {
-      soundBom.play();
-      bullet.visible = false;
-      let bullPart = g.createParticles(bullet.x, bullet.y,
-        function () {
-          return g.sprite(particleBullet);
-        }, g.stage, 1, 0,                                     //Gravity
-        true,                                     //Random spacing
-        0, 0,                                 //Min/max angle
-        22, 56);
     }
     return true;
   });
@@ -315,6 +290,17 @@ function play() {
 
   g.hit(tank, bricks.children, true, false, true);
 
+  let goFinish = g.hit(tank, finish, false, true, true);
+  if(goFinish) {
+    g.pause();
+    finishMessage.visible = true;
+    finishMessage.content = 'finish';
+    g.stage.putCenter(finishMessage);
+    controllBtnStop();
+    g.wait(3000, function () {
+      return reset();
+    });
+  }
 };
 
 function walkTank(a) {
@@ -575,6 +561,7 @@ function controllBtn() {
   };
 }
 function controllBtnStop(){
+  tank.moveForward = false;
   soundPuh.volume = 0;
   soundBom.volume = 0;
   soundVjjj.volume = 0;
@@ -609,4 +596,35 @@ function createBuilding(){
   buildS.y += spriteBlock.height;
   arrBuild.addChild(spriteBlock, buildS);
   return arrBuild;
+}
+function startParam() {
+  createBricks();
+}
+function offParam() {
+
+}
+function createBricks() {
+  bricks = g.grid(5, 4, 200, 250, false, 0, 0,
+    function () {
+      var brick = createBuilding();
+      brick.health = 100;
+      return brick;
+    });
+  bricks.children.forEach((item, i) => {
+    let sizeB = g.randomInt(0, item.width);
+    item.x += sizeB;
+    item.y += sizeB;
+  });
+}
+function reset() {
+  finishMessage.visible = false;
+  g.stage.putCenter(tank);
+  spaceArrow.press = null;
+  g.remove(bullets);
+  g.remove(bricks);
+  bricks.children = [];
+
+  g.slide(titleScene, 0, 0, 30, "decelerationCubed");
+  g.slide(gameSceneOne, g.canvas.width, 0, 30, "decelerationCubed");
+  settingGameScene.visible = false;
 }
