@@ -18,6 +18,12 @@ h1 {
   text-align: center;
 }
 
+.link-conteiner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
 .link-card {
   width: 150px;
   height: 250px;
