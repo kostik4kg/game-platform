@@ -17,6 +17,7 @@ h1{
 }
 .link-conteiner{
   display: flex;
+  flex-wrap: wrap;
 }
 .link-card{
   width: 150px;
@@ -28,7 +29,7 @@ h1{
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin: 15px auto;
 }
 .link-card a{
   text-decoration: none;
